@@ -36,12 +36,14 @@
 
    Each check reports how many elements it examined and fails when that
    is zero, so a page that renders nothing cannot pass by accident.
-   There are two exceptions. Non-text, target size and focus: a page
+   There are three exceptions. Non-text, target size and focus: a page
    with no links, buttons or fields has nothing for them to examine, and
-   that is fine. An empty page (isEmptyPage(): `<body>` holds nothing
-   but whitespace and comments) has nothing for any check to examine, so
-   the "examined nothing" rule is skipped and the row reads "empty
-   page". A page with content keeps the rule for the other checks. */
+   that is fine. Size and leading: a page whose only text is in headings
+   (which are exempt) has nothing for them to examine. An empty page
+   (isEmptyPage(): `<body>` holds nothing but whitespace and comments)
+   has nothing for any check to examine, so the "examined nothing" rule
+   is skipped and the row reads "empty page". A page with content keeps
+   the rule for the other checks. */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { launch } from 'chrome-launcher';
@@ -169,12 +171,15 @@ function inspect({ labelSelector, bodySelector }) {
   // Leading and sizes, per element that holds text.
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const holders = new Set();
+  let headings = 0;
+  let others = 0;
   for (let t = walker.nextNode(); t; t = walker.nextNode()) {
     if (t.data.trim() && t.parentElement) holders.add(t.parentElement);
   }
   for (const el of holders) {
     if (el.closest('script, style, noscript, svg') || hiddenFromAT(el) || !visible(el)) continue;
-    if (el.closest('h1, h2, h3, h4, h5, h6, [role="heading"]')) continue;
+    if (el.closest('h1, h2, h3, h4, h5, h6, [role="heading"]')) { headings += 1; continue; }
+    others += 1;
     const cs = getComputedStyle(el);
     const px = parseFloat(cs.fontSize);
     const bold = parseInt(cs.fontWeight, 10) >= 700;
@@ -190,7 +195,7 @@ function inspect({ labelSelector, bodySelector }) {
       if (ratio < 1.5 - 0.005) report('leading', el, `line-height ${ratio.toFixed(2)} (minimum 1.5)`);
     }
   }
-  return { found, examined };
+  return { found, examined, headingOnly: headings > 0 && others === 0 };
 }
 
 // Runs in the page after each Tab press: the focused element's outline
@@ -281,8 +286,10 @@ try {
       if (presses === 400) problems.focus.push('tab walk gave up after 400 presses without cycling');
       await page.close();
 
-      // These three have nothing to examine on a page without controls or links.
-      for (const c of CHECKS) if (!examined[c] && !['non-text', 'target-size', 'focus'].includes(c) && !empty) problems[c].push('examined nothing');
+      // These have nothing to examine on a page without controls or links, and
+      // size and leading have none when the only text is in headings (exempt).
+      const mayExamineNothing = ['non-text', 'target-size', 'focus', ...(custom.headingOnly ? ['size', 'leading'] : [])];
+      for (const c of CHECKS) if (!examined[c] && !mayExamineNothing.includes(c) && !empty) problems[c].push('examined nothing');
       const bad = CHECKS.some((c) => problems[c].length);
       failed ||= bad;
       const cells = empty && !bad ? ['empty page'] : CHECKS.map((c) => `${c} ${problems[c].length ? problems[c].length : `ok/${examined[c]}`}`);
