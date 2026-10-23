@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "redhill-event",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+
+  // Previews are deployed by the factory app with its own config,
+  // never from this file, so there are no env blocks here.
+  "assets": {
+    "directory": "./site",
+    "not_found_handling": "404-page"
+  }
+}
