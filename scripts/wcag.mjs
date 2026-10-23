@@ -35,9 +35,13 @@
 
    Each check reports how many elements it examined and fails when that
    is zero, so a page that renders nothing, or a tab walk that finds no
-   focusable element, cannot pass by accident. The one exception is
-   non-text: a page with no boxed control (no button, .btn link or
-   field) has nothing for it to examine, and that is fine. */
+   focusable element, cannot pass by accident. There are two exceptions.
+   Non-text: a page with no boxed control (no button, .btn link or
+   field) has nothing for it to examine, and that is fine. An empty
+   page: no text in the body, and no img, video, svg, input, button,
+   select or textarea, has nothing for any check to examine, so the
+   "examined nothing" rule is skipped and the row reads "empty page".
+   A page with content keeps the rule. */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { launch } from 'chrome-launcher';
@@ -186,7 +190,9 @@ function inspect({ labelSelector, bodySelector }) {
       if (ratio < 1.5 - 0.005) report('leading', el, `line-height ${ratio.toFixed(2)} (minimum 1.5)`);
     }
   }
-  return { found, examined };
+  const empty = document.body.innerText.trim() === ''
+    && !document.body.querySelector('img, video, svg, input, button, select, textarea');
+  return { found, examined, empty };
 }
 
 // Runs in the page after each Tab press: the focused element's outline
@@ -276,10 +282,10 @@ try {
       if (presses === 400) problems.focus.push('tab walk gave up after 400 presses without cycling');
       await page.close();
 
-      for (const c of CHECKS) if (!examined[c] && c !== 'non-text') problems[c].push('examined nothing');
+      for (const c of CHECKS) if (!examined[c] && c !== 'non-text' && !custom.empty) problems[c].push('examined nothing');
       const bad = CHECKS.some((c) => problems[c].length);
       failed ||= bad;
-      const cells = CHECKS.map((c) => `${c} ${problems[c].length ? problems[c].length : `ok/${examined[c]}`}`);
+      const cells = custom.empty && !bad ? ['empty page'] : CHECKS.map((c) => `${c} ${problems[c].length ? problems[c].length : `ok/${examined[c]}`}`);
       console.log(`${name}-${form}`.padEnd(LABEL_WIDTH) + cells.join('  ') + (bad ? '  FAIL' : ''));
       for (const c of CHECKS) for (const p of problems[c]) console.log(`  ${c}: ${p}`);
     }

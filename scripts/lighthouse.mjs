@@ -8,12 +8,15 @@
    the median of N runs (absorbs runner noise; the per-run scores print when they differ,
    and the saved report is the run at the performance median); --min S
    fails the process when any median lands below S. CI runs it against
-   `wrangler dev` with --runs 3 --min 98. */
-import { mkdirSync, writeFileSync } from 'node:fs';
+   `wrangler dev` with --runs 3 --min 98. A page that shows nothing
+   (isEmptyPage(): no text, media or controls in the body) paints no
+   content, so Lighthouse cannot score it: its row reads "empty page"
+   and it is not run. */
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import lighthouse, { desktopConfig } from 'lighthouse';
 import { launch } from 'chrome-launcher';
-import { listPages } from './pages.mjs';
+import { isEmptyPage, listPages } from './pages.mjs';
 
 const { values: opts, positionals } = parseArgs({
   allowPositionals: true,
@@ -47,7 +50,11 @@ const chrome = await launch({
 let failed = false;
 try {
   for (const form of forms) {
-    for (const { name, path } of PAGES) {
+    for (const { name, path, file } of PAGES) {
+      if (isEmptyPage(readFileSync(file, 'utf8'))) {
+        console.log(`${name}-${form}`.padEnd(LABEL_WIDTH) + 'empty page');
+        continue;
+      }
       const results = [];
       for (let i = 0; i < runs; i++) {
         const { lhr, report } = await lighthouse(`${base}${path}`, {

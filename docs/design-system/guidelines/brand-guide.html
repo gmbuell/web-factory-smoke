@@ -268,14 +268,6 @@
   .ground-card h3 { font-family: var(--body); font-weight: 800; font-size: 1.2rem; margin-bottom: 0.6rem; }
   .ground-card p { font-size: 1rem; margin: 0; max-width: none; }
 
-  /* ---------- voice ---------- */
-  .voice-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-  .voice-card { border: 2px solid var(--navy); padding: 1.5rem 1.6rem; background: var(--paper); }
-  .voice-card h3 { font-family: var(--body); font-weight: 800; color: var(--navy); font-size: 1.2rem; margin-bottom: 0.6rem; }
-  .voice-card ul { margin: 0; padding-left: 1.2rem; font-size: 1rem; }
-  .voice-card li { margin-bottom: 0.45rem; }
-  .voice-card .say { font-style: italic; color: var(--red); }
-
   /* ---------- do / don't ---------- */
   .dd { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
   .dd-col { border: 2px solid var(--navy); background: var(--paper); }
@@ -304,7 +296,7 @@
   @media print {
     .toc { display: none; }
     section { padding: 2rem 0; }
-    .swatch, .type-card, .motif, .rule, .voice-card, .ground-card, .dd-col,
+    .swatch, .type-card, .motif, .rule, .ground-card, .dd-col,
     .lockup-demo, .banner-demo, table.contrast, .prop-bar { break-inside: avoid; }
     /* Swatches and chips are the guide's content — force their inks
        even when the browser strips backgrounds for print. */
@@ -333,7 +325,6 @@
   <a href="#type">Type</a>
   <a href="#motifs">Motifs</a>
   <a href="#layout">Layout</a>
-  <a href="#voice">Voice</a>
   <a href="#accessibility">Accessibility</a>
   <a href="#guardrails">Guardrails</a>
 </nav>
@@ -678,46 +669,10 @@
   </div>
 </section>
 
-<section class="on-sky" id="voice">
-  <div class="wrap">
-    <div class="ribbon-head">
-      <span class="num">05 &middot; Voice</span>
-      <h2>How Red Hill Sounds</h2>
-      <img class="underline" aria-hidden="true" src="brand-guide/underline-flip-x.svg" alt="">
-    </div>
-    <p>Gratitude first, community always. Red Hill talks like a thankful neighbor.</p>
-    <div class="voice-cols">
-      <div class="voice-card">
-        <h3>Lead with thanks</h3>
-        <ul>
-          <li>Open every ask — donations, volunteering, membership — with appreciation: <span class="say">"Thank you for investing in our students, staff &amp; school."</span></li>
-          <li>Name and celebrate helpers: <span class="say">"Special thanks to the Talbert Family!"</span></li>
-          <li>Announcements may lead with the news instead — but the community heart arrives before the call to action: <span class="say">"100% of proceeds support our students."</span></li>
-        </ul>
-      </div>
-      <div class="voice-card">
-        <h3>Always "our," never "the"</h3>
-        <ul>
-          <li>It's <span class="say">our students, our school, our community</span> — the reader is already part of it.</li>
-          <li>Invitations: <span class="say">"Create your account today, simplify your school year."</span></li>
-        </ul>
-      </div>
-      <div class="voice-card">
-        <h3>Every bit counts</h3>
-        <ul>
-          <li>Remove pressure from every ask: <span class="say">"Any amount is appreciated and makes an impact!"</span></li>
-          <li>Excitement, never scarcity — no "before we sell out," no countdown clocks.</li>
-          <li>Exclamation points are welcome — one per sentence, earned by genuine enthusiasm.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section id="accessibility">
   <div class="wrap">
     <div class="ribbon-head">
-      <span class="num">06 &middot; Accessibility</span>
+      <span class="num">05 &middot; Accessibility</span>
       <h2>Everyone Reads the Poster</h2>
       <img class="underline" aria-hidden="true" src="brand-guide/underline-flip-y.svg" alt="">
     </div>
@@ -732,7 +687,7 @@
 <section class="on-sky" id="guardrails">
   <div class="wrap">
     <div class="ribbon-head">
-      <span class="num">07 &middot; Guardrails</span>
+      <span class="num">06 &middot; Guardrails</span>
       <h2>Keep It Red Hill</h2>
       <img class="underline" aria-hidden="true" src="brand-guide/underline.svg" alt="">
     </div>
@@ -750,7 +705,6 @@
           <li>Carry at least one Spirit Kit motif, even on the sparest piece</li>
           <li>Frame a call to action in a brush band — straight white caps on navy or red</li>
           <li>Sticker-cut a motif to land it on a same-color ground</li>
-          <li>Say thank you before asking — or lead an announcement with the news, never with pressure</li>
         </ul>
       </div>
       <div class="dd-col dont">
@@ -764,7 +718,6 @@
           <li>Use gradients, drop shadows, or outlined illustration (the red outlined heart and the sticker cut's edge are the exceptions)</li>
           <li>Add grain, aging, or distressing — hand-made is contour, never texture</li>
           <li>Arc more than one heading, or bend script text at all</li>
-          <li>Let the tone go corporate — no "utilize," no "per our policy"</li>
         </ul>
       </div>
     </div>

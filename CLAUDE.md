@@ -30,9 +30,10 @@ Start `npm run dev` in one terminal and run the two gates from another.
 ## Layout
 
 - `site/` is the pages. Each is a plain HTML file that carries its own header,
-  nav and footer. A page's URL is its path without the extension, and
-  an `index` file stands for its folder. So `about.html` is served at `/about`
-  and `events/index.html` at `/events/`. `404.html` answers any missing path.
+  nav and footer, except the home page, which starts empty. A page's URL is
+  its path without the extension, and an `index` file stands for its folder.
+  So `about.html` is served at `/about` and `events/index.html` at `/events/`.
+  `404.html` answers any missing path.
   - `css/styles.css` is the one stylesheet. The brand tokens sit under `:root`.
   - `fonts/` holds the self-hosted fonts and their license, and `_headers`
     sets the security headers and the font cache rule.
@@ -56,8 +57,9 @@ report never see it.
 - The WCAG checks pass on every page. They cover text contrast, target size,
   non-text contrast, focus rings, body line-height of 1.5 or more, body text of
   16px or more, and labels and captions of 13px or more.
-- Every page has `<html lang="en">`, a title, a meta description, one `<h1>`
-  and a `<nav>`. `404.html` needs no description.
+- Every page has `<html lang="en">`, a title and a meta description, and no
+  more than one `<h1>`. A page with any text has exactly one. `404.html` needs
+  no description and keeps its `<h1>` and `<nav>`.
 - No broken internal links. Every root-relative `href` is a page path or a file
   under `site/`.
 - `site/` has no build step and ships no runtime dependencies. No bundler,
@@ -69,25 +71,6 @@ People's words go on the page exactly as they wrote them. Don't polish,
 punch up, or add a line after them. When a change needs wording nobody
 gave, write the plainest short version that does the job.
 
-How Red Hill sounds (from the brand guide, the board can change these):
-- Lead with thanks. Open every ask with appreciation; name and celebrate
-  helpers. Announcements may lead with the news, but the community heart
-  comes before the call to action.
-- "Our," never "the": our students, our school, our community.
-- Every bit counts: no pressure, no scarcity, no "before we sell out", no
-  countdown clocks.
-- Exclamation points are welcome, one per sentence at most, and only when
-  the enthusiasm is real.
-
-Never write:
-- Hype filler: "unforgettable", "fun-filled", "exciting opportunity",
-  "join us for a day of", "something for everyone".
-- Lists of three for rhythm, and colons that introduce one.
-- Stacked dashes, or em dashes doing the work of commas.
-- "Not just X, but Y" and "It's not X, it's Y".
-- A closing line that restates the page.
-- Words like delve, tapestry, testament, vibrant, seamless, elevate.
-
 Run `npm run cliches` and deal with every hit before handing a change on.
 
 ## Gotchas
@@ -96,11 +79,8 @@ Run `npm run cliches` and deal with every hit before handing a change on.
   Fix the wording. If the hit is in words the PTA gave, those words stay, and
   the reviewer says so. The report reads visible text, `alt`, `title` and the
   meta description.
-- The report runs Simon Willison's patterns plus the house list in
-  `scripts/voice-patterns.mjs`. It can't catch everything, such as lists of
-  three or a closing line that restates the page, so a reviewer still reads
-  every page against the Never-write list by hand. When a board member or
-  reviewer spots a repeat offender, add it to the house list.
+- The report knows only Simon Willison's patterns and can't catch everything,
+  so a reviewer still reads every change for wording nobody gave.
 - Non-text contrast may examine zero elements: a page with no button, `.btn`
   link or field has nothing to check, and that is fine. Every other WCAG check
   fails when it examines nothing.
@@ -109,14 +89,19 @@ Run `npm run cliches` and deal with every hit before handing a change on.
   body copy goes in a `<small>`.
 - Fonts are self-hosted latin subsets in `site/fonts/` (Oswald, Nunito Sans and
   Kaushan Script). Don't link a font host. Only the body font (Nunito Sans) is
-  preloaded; copy that one `<link rel="preload">` from `index.html` into a new
-  page and add no others. `_headers` caches `/fonts/*` for a year as immutable,
-  so a changed font needs a new file name.
+  preloaded, on a page that shows text, with `<link rel="preload"
+  href="/fonts/nunito-sans-latin-wght-normal.woff2" as="font"
+  type="font/woff2" crossorigin>`. Add no other preloads. `_headers` caches
+  `/fonts/*` for a year as immutable, so a changed font needs a new file name.
 - Install with `npm ci` and keep `package-lock.json` in git. A fresh resolve
   without the lockfile crashes npm 10.9.8's arborist unless
   `--legacy-peer-deps` is passed.
 - There is no include or template. A new page needs its link added to the nav
-  of every other page, `404.html` too, and `aria-current="page"` on its own
-  link. No test checks this.
+  of every other page that has one, `404.html` too, and `aria-current="page"`
+  on its own link. No test checks this.
+- The home page starts empty on purpose: a head and an empty body. Lighthouse
+  can't score a page that paints nothing and the WCAG gate has nothing to
+  examine, so both print `empty page` for it instead of failing. Once the
+  page has content, every check applies.
 - `wrangler.jsonc` has no `env` blocks on purpose: the factory app deploys
   previews with its own config. Don't add branch builds or previews here.

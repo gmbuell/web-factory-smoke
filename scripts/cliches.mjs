@@ -1,10 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { patterns as vendored } from './vendor/llm-cliches.mjs';
-import { patterns as house } from './voice-patterns.mjs';
 import { listPages } from './pages.mjs';
 
-// Report only: prints LLM clichés (Simon Willison's patterns, then the house list in voice-patterns.mjs) per page and always exits 0.
+// Report only: prints LLM clichés (Simon Willison's patterns) per page and always exits 0.
 // Usage: node scripts/cliches.mjs [--site <dir>] [--json]
 
 const BLOCK = /^(?:p|div|li|h[1-6]|br|section|header|footer|main|nav|td|th|tr|blockquote|figcaption|ul|ol|article|aside|dt|dd|details|summary|button|label|option|title|hr|form|table)$/;
@@ -41,7 +40,7 @@ export function pageText(html) {
 }
 
 export function findCliches(text) {
-  return [...vendored, ...house].flatMap((p) =>
+  return vendored.flatMap((p) =>
     p.find(text).map(({ start, end }) => ({ pattern: p.name, match: text.slice(start, end) })));
 }
 
