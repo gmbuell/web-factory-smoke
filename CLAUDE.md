@@ -57,9 +57,9 @@ report never see it.
 - The WCAG checks pass on every page. They cover text contrast, target size,
   non-text contrast, focus rings, body line-height of 1.5 or more, body text of
   16px or more, and labels and captions of 13px or more.
-- Every page has `<html lang="en">`, a title and a meta description, and no
-  more than one `<h1>`. A page with any text has exactly one. `404.html` needs
-  no description and keeps its `<h1>` and `<nav>`.
+- Every page has `<html lang="en">` and no more than one `<h1>`. A page that
+  shows anything also has a title, a meta description and exactly one `<h1>`.
+  `404.html` needs no description and keeps its `<h1>` and `<nav>`.
 - No broken internal links. Every root-relative `href` is a page path or a file
   under `site/`.
 - `site/` has no build step and ships no runtime dependencies. No bundler,
@@ -99,9 +99,9 @@ Run `npm run cliches` and deal with every hit before handing a change on.
 - There is no include or template. A new page needs its link added to the nav
   of every other page that has one, `404.html` too, and `aria-current="page"`
   on its own link. No test checks this.
-- The home page starts empty on purpose: a head and an empty body. Lighthouse
-  can't score a page that paints nothing and the WCAG gate has nothing to
-  examine, so both print `empty page` for it instead of failing. Once the
-  page has content, every check applies.
+- The home page starts empty on purpose: no title, no description and an
+  empty body. Lighthouse can't score a page that paints nothing and the WCAG
+  gate has nothing to examine, so both print `empty page` for it instead of
+  failing. Once the page has content, every check applies.
 - `wrangler.jsonc` has no `env` blocks on purpose: the factory app deploys
   previews with its own config. Don't add branch builds or previews here.

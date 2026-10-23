@@ -10,13 +10,15 @@ const pages = listPages(siteDir);
 const DESCRIPTION = /<meta name="description" content="[^"]*\S[^"]*"/;
 
 // The checks every page shares. The 404 page has no description to check.
-// An empty page may have no h1; any other page has exactly one.
+// An empty page needs only its language; any other page needs a title and
+// exactly one h1.
 function basics(html) {
   expect(html).toContain('<html lang="en">');
-  expect(html).toMatch(/<title>\s*\S[^<]*<\/title>/);
   const h1s = count(html, /<h1[\s>]/g);
   expect(h1s).toBeLessThanOrEqual(1);
-  if (!isEmptyPage(html)) expect(h1s).toBe(1);
+  if (isEmptyPage(html)) return;
+  expect(html).toMatch(/<title>\s*\S[^<]*<\/title>/);
+  expect(h1s).toBe(1);
 }
 
 it('has pages to check', () => {
@@ -25,9 +27,9 @@ it('has pages to check', () => {
 
 describe.each(pages)('$path', ({ file }) => {
   const html = readFileSync(file, 'utf8');
-  it('has a language, title and, unless empty, one h1', () => basics(html));
-  it('has a description', () => {
-    expect(html).toMatch(DESCRIPTION);
+  it('has a language and, unless empty, a title and one h1', () => basics(html));
+  it('has a description, unless empty', () => {
+    if (!isEmptyPage(html)) expect(html).toMatch(DESCRIPTION);
   });
 });
 
@@ -47,8 +49,8 @@ it('isEmptyPage is true only for a page that shows nothing', () => {
 it('a page with an empty body passes the basics', () => {
   const html = readFileSync(new URL('./fixtures/empty-site/index.html', import.meta.url), 'utf8');
   expect(isEmptyPage(html)).toBe(true);
+  expect(html).not.toMatch(/<title>|name="description"/);
   basics(html);
-  expect(html).toMatch(DESCRIPTION);
 });
 
 it('a page with text and no h1 fails the basics', () => {
