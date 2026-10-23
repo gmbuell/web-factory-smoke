@@ -1,25 +1,22 @@
 # Red Hill Elementary PTA event site
 
 Static pages in `site/` (plain HTML, CSS and vanilla JS, no build step),
-served as Cloudflare Worker assets. Production is
-<https://redhill-event.gmbuell.workers.dev>.
+served as Cloudflare Worker assets.
 
-Changes come in through the PTA factory app, which pushes branches and deploys
-previews. Only `main` deploys production. Never run `npm run deploy` or create
-Cloudflare resources from here.
+Commit to your branch. The factory app pushes it, deploys a preview, merges to
+`main` and deploys production. This sandbox has no GitHub or Cloudflare
+credentials.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `npm ci` | Install from `package-lock.json`. Keep the lockfile; re-resolving needs `--legacy-peer-deps` |
+| `npm ci` | Install from `package-lock.json` |
 | `npm run dev` | `wrangler dev` on http://localhost:8787 |
-| `npm test` | Page basics, internal links and the cliché report |
-| `npm run audit -- --url http://localhost:8787 --runs 3 --min 98` | The Lighthouse gate, mobile and desktop. `--page <slug>` narrows it; a slug is the URL path with `/` as `-`, and `home` for `/` |
-| `npm run wcag -- --url http://localhost:8787` | The WCAG 2.2 gate, mobile and desktop |
+| `npm test` | Page basics and internal links |
+| `npm run audit -- --runs 3` | The Lighthouse gate, mobile and desktop, run with `npm run dev` going. `--page <slug>` narrows it; a slug is the URL path with `/` as `-`, and `home` for `/` |
+| `npm run wcag` | The WCAG 2.2 gate, mobile and desktop, also run with `npm run dev` going |
 | `npm run cliches` | Prints LLM clichés per page. Never fails |
-
-Without `--url`, `audit` and `wcag` check production.
 
 ## Layout
 
@@ -39,11 +36,6 @@ updated.
 
 ## Invariants
 
-- Lighthouse 98 or higher in all four categories, mobile and desktop.
-- The WCAG checks pass.
-- Every page has `<html lang="en">`. A page that shows anything also has a
-  title, a meta description (except `404.html`) and exactly one `<h1>`.
-- No broken internal links.
 - `site/` is served as written. Nothing from npm reaches the browser.
 
 ## Voice
@@ -52,14 +44,12 @@ People's words go on the page exactly as they wrote them. Don't polish,
 punch up, or add a line after them. When a change needs wording nobody
 gave, write the plainest short version that does the job.
 
-Run `npm run cliches` and deal with every hit before handing a change on.
+Run `npm run cliches`; reword a hit only in wording nobody gave.
 
 ## Gotchas
 
-- The cliché report knows only Simon Willison's patterns, so also read every
-  change for wording nobody gave. A hit in words the PTA gave stays.
-- A page with nothing in its body prints `empty page` in both gates instead of
-  failing.
+- A page whose `<body>` is empty prints `empty page` in both gates instead of
+  failing. Anything in the body, a script included, makes it a page.
 - There are no templates. A new page's link goes in the nav of every page that
   has one, `404.html` included.
 - `_headers` caches `/fonts/*` as immutable, so a changed font needs a new file
