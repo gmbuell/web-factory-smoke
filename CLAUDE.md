@@ -40,7 +40,10 @@ Start `npm run dev` in one terminal and run the two gates from another.
 - `scripts/` holds the gates, one file per command, and `listPages()` in
   `pages.mjs`. Simon Willison's cliché patterns sit unedited in `vendor/`.
 - `docs/design-system/` is the brand. Read its `readme.md` first, then
-  `guidelines/brand-guide.html`.
+  `guidelines/brand-guide.html`. It's the default starting point, not a fixed
+  rule. When the board wants a different look, rework the design system
+  itself (the guide, the tokens in `styles.css`, the fonts) as part of the
+  change, and keep the guide and the tokens in step.
 - `test/` is vitest. The link checker is `site-checks.js`, and `fixtures/`
   holds small sites for the tests to run against.
 
