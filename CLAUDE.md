@@ -20,7 +20,7 @@ here. The README is a short pointer; this file is the operating manual.
 | `npm ci` | Install exactly what `package-lock.json` says. Use it instead of `npm install` |
 | `npm run dev` | `wrangler dev` on http://localhost:8787 |
 | `npm test` | vitest, about a second. It covers per-page basics, internal links, the page list and the cliché report |
-| `npm run audit` | Lighthouse on every page, mobile and desktop (needs Chrome). With no `--url` it audits production. The gate is `npm run audit -- --url http://localhost:8787 --runs 3 --min 98`. `--form mobile` and `--page <slug>` narrow it. Reports go to `lighthouse-reports/` (gitignored) |
+| `npm run audit` | Lighthouse on every page, mobile and desktop (needs Chrome). With no `--url` it audits production. The gate is `npm run audit -- --url http://localhost:8787 --runs 3 --min 98`. `--form mobile` and `--page <slug>` narrow it. A slug is the page's URL path with `/` as `-`, and `home` for `/`, so `site/events/carnival.html` is `events-carnival`. Reports go to `lighthouse-reports/` (gitignored) |
 | `npm run wcag` | WCAG 2.2 checks on every page, mobile and desktop (needs Chrome). With no `--url` it checks production. The gate is `npm run wcag -- --url http://localhost:8787`. Each cell shows how many elements the check examined |
 | `npm run cliches` | Prints LLM clichés per page. Always exits 0. `-- --json` for JSON, `-- --site <dir>` for another folder |
 | `npm run deploy` | **Ships to production.** Don't run it. Workers Builds runs it for `main`; `predeploy` runs the tests first |
@@ -96,6 +96,11 @@ Run `npm run cliches` and deal with every hit before handing a change on.
   Fix the wording. If the hit is in words the PTA gave, those words stay, and
   the reviewer says so. The report reads visible text, `alt`, `title` and the
   meta description.
+- The report runs Simon Willison's patterns plus the house list in
+  `scripts/voice-patterns.mjs`. It can't catch everything, such as lists of
+  three or a closing line that restates the page, so a reviewer still reads
+  every page against the Never-write list by hand. When a board member or
+  reviewer spots a repeat offender, add it to the house list.
 - Non-text contrast may examine zero elements: a page with no button, `.btn`
   link or field has nothing to check, and that is fine. Every other WCAG check
   fails when it examines nothing.

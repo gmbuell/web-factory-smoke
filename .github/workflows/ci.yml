@@ -9,7 +9,7 @@ on:
 permissions:
   contents: read
 
-# A newer push to the same PR supersedes the run in progress.
+# A newer push to the same branch or PR supersedes the run in progress.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -60,7 +60,7 @@ jobs:
       - name: Lighthouse gate
         run: node scripts/lighthouse.mjs --url http://localhost:8787 --runs 3 --min 98 --form ${{ matrix.form }}
       - name: WCAG gate
-        if: steps.dev.outcome == 'success'
+        if: ${{ !cancelled() && steps.dev.outcome == 'success' }}
         run: node scripts/wcag.mjs --url http://localhost:8787 --form ${{ matrix.form }}
       - uses: actions/upload-artifact@v7
         if: always()
