@@ -6,7 +6,7 @@ import { listPages } from './pages.mjs';
 // Report only: prints LLM clichés (Simon Willison's patterns) per page and always exits 0.
 // Usage: node scripts/cliches.mjs [--site <dir>] [--json]
 
-const BLOCK = /^(?:p|div|li|h[1-6]|br|section|header|footer|main|nav|td|th|tr|blockquote|figcaption)$/;
+const BLOCK = /^(?:p|div|li|h[1-6]|br|section|header|footer|main|nav|td|th|tr|blockquote|figcaption|ul|ol|article|aside|dt|dd|details|summary|button|label|option|title|hr|form|table)$/;
 const ENTITIES = {
   amp: '&', lt: '<', gt: '>', quot: '"', nbsp: ' ',
   rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', mdash: '—', ndash: '–', hellip: '…',
@@ -25,6 +25,7 @@ export function pageText(html) {
   const text = html
     .replace(/<!--[\s\S]*?-->|<![^>]*>/g, '')
     .replace(/<(script|style|template|svg)\b[\s\S]*?<\/\1\s*>/gi, '')
+    .replace(/\s+/g, ' ') // source newlines are not line breaks; only block tags are
     .replace(TAG, (tag) => {
       const name = tag.match(/^<\/?([a-z][a-z0-9]*)/i)[1].toLowerCase();
       const lifted = [attr(tag, 'alt'), attr(tag, 'title'), name === 'meta' && attr(tag, 'name')?.toLowerCase() === 'description' ? attr(tag, 'content') : undefined]

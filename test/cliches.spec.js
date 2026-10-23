@@ -8,11 +8,16 @@ it('reads visible text, including alt, title and the meta description', () => {
   expect(pageText('<meta name="description" content="Desc"><img alt="Alt text">')).toContain('Desc');
   expect(pageText('<img alt="Alt text">')).toContain('Alt text');
   expect(pageText('<!doctype html><!-- note --><p>Hi</p>')).toBe('Hi');
+  expect(pageText('<p>stands as a\ntestament</p>')).not.toContain('\n');
+  expect(pageText('<dl><dt>Date</dt><dd>May 16</dd></dl>')).toBe('Date\nMay 16');
 });
 
 it('finds clichés and leaves plain event copy alone', () => {
   expect(findCliches('This event stands as a testament to our community.').map((h) => h.pattern))
     .toContain('“Stands as a testament”');
+  expect(findCliches(pageText('<p>It is not a fair\nbut a celebration.</p>')).map((h) => h.pattern))
+    .toContain('“Not X, but Y”');
+  expect(findCliches(pageText('<p>If you\nlook, you will see.</p>'))).toEqual([]);
   expect(findCliches('The carnival is on Saturday, May 16, from 10am to 2pm.')).toEqual([]);
 });
 
