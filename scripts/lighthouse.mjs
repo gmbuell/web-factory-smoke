@@ -83,6 +83,9 @@ try {
   }
 } finally {
   await chrome.kill();
+  // chrome.kill() signals the process group, which a sandbox's seccomp can refuse;
+  // Chrome would then keep Node alive. Kill its own PID too (it may be gone already).
+  try { process.kill(chrome.pid, 'SIGKILL'); } catch {}
 }
 console.log(`HTML reports in ${out}/`);
 if (failed) {

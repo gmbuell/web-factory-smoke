@@ -300,6 +300,9 @@ try {
 } finally {
   await browser.disconnect();
   await chrome.kill();
+  // chrome.kill() signals the process group, which a sandbox's seccomp can refuse;
+  // Chrome would then keep Node alive. Kill its own PID too (it may be gone already).
+  try { process.kill(chrome.pid, 'SIGKILL'); } catch {}
 }
 if (failed) {
   console.error('WCAG gate: a page has failures listed above.');
