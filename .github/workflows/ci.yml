@@ -15,8 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 # The job names below are the required checks on main: `test`,
-# `lighthouse (mobile)` and `lighthouse (desktop)`. Renaming a job or
-# changing the matrix breaks the ruleset.
+# `lighthouse (mobile)` and `lighthouse (desktop)`. The factory's
+# onboarding makes them required; nobody creates a ruleset by hand.
+# Renaming a job or changing the matrix breaks that.
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -28,6 +29,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      # Reports LLM-prose patterns in the page text. It always passes; the
+      # hits are in this job's log.
+      - run: npm run cliches
 
   # Every page must score 98+ in all four categories, median of three
   # runs, then pass the WCAG checks, against a local wrangler dev (no
@@ -67,16 +71,3 @@ jobs:
         with:
           name: lighthouse-${{ matrix.form }}
           path: lighthouse-reports/
-
-  # Reports LLM-prose patterns in the page text. It always passes; the
-  # hits are in this job's log.
-  cliches:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: node scripts/cliches.mjs

@@ -1,4 +1,3 @@
 node_modules/
 .wrangler/
 lighthouse-reports/
-.dev.vars

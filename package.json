@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "wrangler dev",
     "test": "vitest run",
-    "predeploy": "npm test",
-    "deploy": "wrangler deploy",
     "audit": "node scripts/lighthouse.mjs",
     "wcag": "node scripts/wcag.mjs",
     "cliches": "node scripts/cliches.mjs"
