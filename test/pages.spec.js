@@ -44,6 +44,10 @@ it('isEmptyPage is true only for a page that shows nothing', () => {
   expect(isEmptyPage('<body>\n  <!-- <p>note</p> -->\n</body>')).toBe(true);
   expect(isEmptyPage('<body><p>Hi</p></body>')).toBe(false);
   expect(isEmptyPage('<body><img src=x alt=""></body>')).toBe(false);
+  expect(isEmptyPage(`<body><script>document.body.textContent='x'</script></body>`)).toBe(false);
+  expect(isEmptyPage('<body><object data="flyer.pdf"></object></body>')).toBe(false);
+  expect(isEmptyPage('<body><audio controls src="a.mp3"></audio></body>')).toBe(false);
+  expect(isEmptyPage('<body style="background:url(a.jpg)"></body>')).toBe(false);
 });
 
 it('a page with an empty body passes the basics', () => {
@@ -63,5 +67,5 @@ it('every root-relative link resolves', () => {
 
 it('the link check reports a link to nowhere', () => {
   const fixture = new URL('./fixtures/broken-link-site/', import.meta.url);
-  expect(brokenLinks(fixture)).toEqual(['/nowhere']);
+  expect(brokenLinks(fixture)).toEqual(['/nowhere', '/images/missing.jpg']);
 });

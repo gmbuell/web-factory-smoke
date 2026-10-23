@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /* WCAG 2.2 checks on every public page, mobile and desktop.
    Usage: node scripts/wcag.mjs [--url <base>] [--form mobile|desktop|both] [--page <slug>]
-   Defaults: the live site, both form factors, every page in site/ (listPages():
-   slug = URL path with "/" as "-", "home" for the root; the 404 is
-   skipped). Exits 1 when any page fails a check. CI runs it against
-   `wrangler dev`.
+   Defaults: http://localhost:8787 (`npm run dev`), both form factors,
+   every page in site/ (listPages(): slug = URL path with "/" as "-",
+   "home" for the root; the 404 is skipped). Exits 1 when any page fails
+   a check. CI runs it against `wrangler dev`.
 
    Each page is loaded as a visitor first sees it, then every [hidden]
    element is revealed so later panels get checked too. Markup that
@@ -21,7 +21,8 @@
      surrounds it; a text-only button is identified by its text, which
      the text-contrast check covers
    - focus (SC 1.4.11): every element the Tab key reaches shows a focus
-     outline at 3:1 against its surroundings
+     outline at 3:1 against its surroundings; the browser's own default
+     ring counts
    - text spacing: body text has a line-height of at least 1.5
    - minimum sizes: body text is 16px or larger; labels and captions
      are 13px or larger
@@ -34,24 +35,23 @@
    exempt from both.
 
    Each check reports how many elements it examined and fails when that
-   is zero, so a page that renders nothing, or a tab walk that finds no
-   focusable element, cannot pass by accident. There are two exceptions.
-   Non-text: a page with no boxed control (no button, .btn link or
-   field) has nothing for it to examine, and that is fine. An empty
-   page: no text in the body, and no img, video, svg, input, button,
-   select or textarea, has nothing for any check to examine, so the
-   "examined nothing" rule is skipped and the row reads "empty page".
-   A page with content keeps the rule. */
+   is zero, so a page that renders nothing cannot pass by accident.
+   There are two exceptions. Non-text, target size and focus: a page
+   with no links, buttons or fields has nothing for them to examine, and
+   that is fine. An empty page (isEmptyPage(): `<body>` holds nothing
+   but whitespace and comments) has nothing for any check to examine, so
+   the "examined nothing" rule is skipped and the row reads "empty
+   page". A page with content keeps the rule for the other checks. */
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { launch } from 'chrome-launcher';
 import puppeteer from 'puppeteer-core';
-import { listPages } from './pages.mjs';
+import { isEmptyPage, listPages } from './pages.mjs';
 
 const { values: opts, positionals } = parseArgs({
   allowPositionals: true,
   options: {
-    url: { type: 'string', default: 'https://redhill-event.gmbuell.workers.dev' },
+    url: { type: 'string', default: 'http://localhost:8787' },
     form: { type: 'string', default: 'both' },
     page: { type: 'string' },
   },
@@ -190,9 +190,7 @@ function inspect({ labelSelector, bodySelector }) {
       if (ratio < 1.5 - 0.005) report('leading', el, `line-height ${ratio.toFixed(2)} (minimum 1.5)`);
     }
   }
-  const empty = document.body.innerText.trim() === ''
-    && !document.body.querySelector('img, video, svg, input, button, select, textarea');
-  return { found, examined, empty };
+  return { found, examined };
 }
 
 // Runs in the page after each Tab press: the focused element's outline
@@ -219,7 +217,7 @@ function focusRing() {
   const cs = getComputedStyle(el);
   const name = describe(el);
   // The browser's own ring is exempt from the author's contrast duty.
-  if (cs.outlineStyle === 'auto') return {};
+  if (cs.outlineStyle === 'auto') return { examined: true };
   if (cs.outlineStyle === 'none' || parseFloat(cs.outlineWidth) < 1) {
     return { examined: true, problem: `${name}: no focus outline` };
   }
@@ -233,13 +231,14 @@ function focusRing() {
 }
 
 const chrome = await launch({
-  chromeFlags: ['--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+  chromeFlags: ['--headless=new', '--no-sandbox', '--no-zygote', '--disable-gpu', '--disable-dev-shm-usage'],
 });
 const browser = await puppeteer.connect({ browserURL: `http://127.0.0.1:${chrome.port}` });
 let failed = false;
 try {
   for (const form of forms) {
-    for (const { name, path } of PAGES) {
+    for (const { name, path, file } of PAGES) {
+      const empty = isEmptyPage(readFileSync(file, 'utf8'));
       const page = await browser.newPage();
       await page.setViewport(VIEWPORTS[form]);
       await page.goto(`${base}${path}`, { waitUntil: 'networkidle0' });
@@ -282,10 +281,11 @@ try {
       if (presses === 400) problems.focus.push('tab walk gave up after 400 presses without cycling');
       await page.close();
 
-      for (const c of CHECKS) if (!examined[c] && c !== 'non-text' && !custom.empty) problems[c].push('examined nothing');
+      // These three have nothing to examine on a page without controls or links.
+      for (const c of CHECKS) if (!examined[c] && !['non-text', 'target-size', 'focus'].includes(c) && !empty) problems[c].push('examined nothing');
       const bad = CHECKS.some((c) => problems[c].length);
       failed ||= bad;
-      const cells = custom.empty && !bad ? ['empty page'] : CHECKS.map((c) => `${c} ${problems[c].length ? problems[c].length : `ok/${examined[c]}`}`);
+      const cells = empty && !bad ? ['empty page'] : CHECKS.map((c) => `${c} ${problems[c].length ? problems[c].length : `ok/${examined[c]}`}`);
       console.log(`${name}-${form}`.padEnd(LABEL_WIDTH) + cells.join('  ') + (bad ? '  FAIL' : ''));
       for (const c of CHECKS) for (const p of problems[c]) console.log(`  ${c}: ${p}`);
     }

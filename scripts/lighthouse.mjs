@@ -2,16 +2,17 @@
 /* Audit every public page with Lighthouse and print a score table.
    Usage: node scripts/lighthouse.mjs [--url <base>] [--runs N] [--min S]
                                       [--form mobile|desktop|both] [--page <slug>]
-   Defaults: the live site, one run, both form factors, every page in
-   site/ (listPages(): slug = URL path with "/" as "-", "home" for the
-   root; the 404 is skipped), report only. --runs N scores each page by
-   the median of N runs (absorbs runner noise; the per-run scores print when they differ,
-   and the saved report is the run at the performance median); --min S
-   fails the process when any median lands below S. CI runs it against
-   `wrangler dev` with --runs 3 --min 98. A page that shows nothing
-   (isEmptyPage(): no text, media or controls in the body) paints no
-   content, so Lighthouse cannot score it: its row reads "empty page"
-   and it is not run. */
+   Defaults: http://localhost:8787 (`npm run dev`), one run, a minimum of
+   98, both form factors, every page in site/ (listPages(): slug = URL
+   path with "/" as "-", "home" for the root; the 404 is skipped).
+   --runs N scores each page by the median of N runs (absorbs runner
+   noise; the per-run scores print when they differ, and the saved report
+   is the run at the performance median); --min S fails the process when
+   any median lands below S, and --min 0 only reports. CI runs it against
+   `wrangler dev` with --runs 3. A page that shows nothing (isEmptyPage():
+   `<body>` holds nothing but whitespace and comments) paints no content,
+   so Lighthouse cannot score it: its row reads "empty page" and it is
+   not run. */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import lighthouse, { desktopConfig } from 'lighthouse';
@@ -21,16 +22,16 @@ import { isEmptyPage, listPages } from './pages.mjs';
 const { values: opts, positionals } = parseArgs({
   allowPositionals: true,
   options: {
-    url: { type: 'string', default: 'https://redhill-event.gmbuell.workers.dev' },
+    url: { type: 'string', default: 'http://localhost:8787' },
     runs: { type: 'string', default: '1' },
-    min: { type: 'string' },
+    min: { type: 'string', default: '98' },
     form: { type: 'string', default: 'both' },
     page: { type: 'string' },
   },
 });
 const base = (positionals[0] || opts.url).replace(/\/$/, '');
 const runs = Number(opts.runs);
-const min = opts.min === undefined ? null : Number(opts.min);
+const min = Number(opts.min);
 const forms = opts.form === 'both' ? ['mobile', 'desktop'] : [opts.form];
 
 // The pages are the HTML files; the worker renders whatever is there.
@@ -45,7 +46,7 @@ const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 const score = (lhr, c) => Math.round((lhr.categories[c].score ?? 0) * 100);
 
 const chrome = await launch({
-  chromeFlags: ['--headless=new', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+  chromeFlags: ['--headless=new', '--no-sandbox', '--no-zygote', '--disable-gpu', '--disable-dev-shm-usage'],
 });
 let failed = false;
 try {
@@ -72,7 +73,7 @@ try {
       const cells = CATEGORIES.map((c) => {
         const all = results.map((r) => score(r.lhr, c));
         const m = median(all);
-        if (min !== null && m < min) bad = true;
+        if (m < min) bad = true;
         const spread = new Set(all).size > 1 ? ` (${all.join('/')})` : '';
         return `${c} ${m}${spread}`;
       });

@@ -16,10 +16,8 @@ export function listPages(siteDir = new URL('../site/', import.meta.url)) {
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
-// True when a page shows nothing: no text in the body (after dropping the
-// head, comments, scripts and styles) and no media, frame or form control.
+// True when <body> holds nothing but whitespace and comments. Anything
+// else, a script and an attribute on <body> included, makes it a page.
 export function isEmptyPage(html) {
-  const body = html.replace(/<head\b[\s\S]*?<\/head\s*>|<!--[\s\S]*?-->|<(script|style)\b[\s\S]*?<\/\1\s*>/gi, '');
-  return body.replace(/<[^>]*>/g, '').trim() === ''
-    && !/<(?:img|video|svg|canvas|iframe|input|button|select|textarea)\b/i.test(body);
+  return /<body>\s*<\/body>/i.test(html.replace(/<!--[\s\S]*?-->/g, ''));
 }
