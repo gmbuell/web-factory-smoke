@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same PR supersedes the run in progress.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# The job names below are the required checks on main: `test`,
+# `lighthouse (mobile)` and `lighthouse (desktop)`. Renaming a job or
+# changing the matrix breaks the ruleset.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  # Every page must score 98+ in all four categories, median of three
+  # runs, then pass the WCAG checks, against a local wrangler dev (no
+  # Cloudflare login needed, so PRs from forks work too). The site is
+  # static, so there is no database to migrate or seed.
+  lighthouse:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        form: [mobile, desktop]
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start wrangler dev
+        id: dev
+        run: |
+          npx wrangler dev --port 8787 > wrangler-dev.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf -o /dev/null http://localhost:8787/ && exit 0
+            sleep 1
+          done
+          echo 'wrangler dev did not come up'; cat wrangler-dev.log; exit 1
+      - name: Lighthouse gate
+        run: node scripts/lighthouse.mjs --url http://localhost:8787 --runs 3 --min 98 --form ${{ matrix.form }}
+      - name: WCAG gate
+        if: steps.dev.outcome == 'success'
+        run: node scripts/wcag.mjs --url http://localhost:8787 --form ${{ matrix.form }}
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-${{ matrix.form }}
+          path: lighthouse-reports/
+
+  # Reports LLM-prose patterns in the page text. It always passes; the
+  # hits are in this job's log.
+  cliches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/cliches.mjs
