@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import worker from '../worker/index.js';
 
-function fakeEnv() {
-  const rows = [];
+function fakeEnv(rows = []) {
   return {
     GUESTBOOK: {
       prepare(sql) {
@@ -50,6 +49,12 @@ describe('guestbook worker', () => {
 
   it('rejects a message of only whitespace', async () => {
     expect((await post(fakeEnv(), { name: 'Ann', message: '   ' })).status).toBe(400);
+  });
+
+  it('lists an old entry with no message as null', async () => {
+    const env = fakeEnv([{ name: 'Old' }]);
+    const res = await worker.fetch(new Request('http://x/api/guestbook'), env);
+    expect((await res.json()).names).toEqual([{ name: 'Old', message: null }]);
   });
 
   it('still checks names', async () => {
