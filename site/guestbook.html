@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guestbook · Red Hill PTA</title>
+<meta name="description" content="Sign the guestbook and see the last 10 names.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <span class="wordmark">Red Hill</span>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/guestbook" aria-current="page">Guestbook</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  <h1>Guestbook</h1>
+  <form id="guestbook-form">
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" maxlength="100" autocomplete="name" required>
+    <button class="btn" type="submit">Sign</button>
+  </form>
+  <p id="status" role="status"></p>
+  <h2>Last 10 names</h2>
+  <ul id="names"></ul>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Red Hill Elementary PTA</p>
+  </div>
+</footer>
+<script src="/js/guestbook.js"></script>
+</body>
+</html>
