@@ -35,8 +35,8 @@ jobs:
 
   # Every page must score 98+ in all four categories, median of three
   # runs, then pass the WCAG checks, against a local wrangler dev (no
-  # Cloudflare login needed, so PRs from forks work too). The site is
-  # static, so there is no database to migrate or seed.
+  # Cloudflare login needed, so PRs from forks work too). The guestbook
+  # database is migrated locally first.
   lighthouse:
     runs-on: ubuntu-latest
     strategy:
@@ -52,6 +52,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx wrangler d1 migrations apply guestbook --local
       - name: Start wrangler dev
         id: dev
         run: |

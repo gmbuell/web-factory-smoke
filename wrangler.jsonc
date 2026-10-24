@@ -6,6 +6,10 @@
 
   // Previews are deployed by the factory app with its own config,
   // never from this file, so there are no env blocks here.
+  "main": "worker/index.js",
+  "d1_databases": [
+    { "binding": "GUESTBOOK", "database_name": "guestbook", "database_id": "e8a381ff-58df-4160-987b-b46f1d274432", "migrations_dir": "migrations/guestbook" }
+  ],
   "assets": {
     "directory": "./site",
     "not_found_handling": "404-page"
