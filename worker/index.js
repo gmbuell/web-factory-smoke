@@ -1,3 +1,5 @@
+import { checkName } from './names.js';
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -27,9 +29,9 @@ export default {
       } catch {
         return json({ error: 'Bad request' }, 400);
       }
-      const name = typeof data?.name === 'string' ? data.name.trim() : '';
-      if (!name || name.length > 100) {
-        return json({ error: 'Name must be 1 to 100 characters' }, 400);
+      const { name, error } = checkName(data?.name);
+      if (error) {
+        return json({ error }, 400);
       }
       await env.GUESTBOOK.prepare('INSERT INTO names (name) VALUES (?)').bind(name).run();
       return json({ names: await lastNames(env) }, 201);
