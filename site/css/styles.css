@@ -146,4 +146,6 @@ textarea {
 button.btn { border: 0; font: inherit; font-weight: 700; cursor: pointer; }
 textarea { resize: vertical; }
 #names { margin: 0; padding-left: 1.25rem; }
-#names .message { display: block; }
+#names li { margin-bottom: 0.75rem; }
+#names .entry-name { font-weight: 800; }
+#names .message { display: block; margin-top: 0.15rem; padding-left: 0.75rem; border-left: 3px solid var(--navy); }

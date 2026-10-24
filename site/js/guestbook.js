@@ -8,11 +8,14 @@ function show(names) {
   list.replaceChildren(
     ...names.map((n) => {
       const li = document.createElement('li');
-      li.textContent = n.name;
+      const name = document.createElement('strong');
+      name.className = 'entry-name';
+      name.textContent = n.name;
+      li.append(name);
       if (n.message) {
         const span = document.createElement('span');
         span.className = 'message';
-        span.textContent = ` ${n.message}`;
+        span.textContent = n.message;
         li.append(span);
       }
       return li;
