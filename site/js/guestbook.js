@@ -39,12 +39,15 @@ form.addEventListener('submit', async (e) => {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ name: input.value, message: messageInput.value }),
     });
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(res.status === 400 ? body?.error : '');
+    }
     show((await res.json()).names);
     input.value = '';
     messageInput.value = '';
-  } catch {
-    status.textContent = 'Could not save your name.';
+  } catch (err) {
+    status.textContent = err.message || 'Could not save your name.';
   }
 });
 
