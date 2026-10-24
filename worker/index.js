@@ -1,4 +1,5 @@
 import { checkName } from './names.js';
+import { checkMessage } from './messages.js';
 
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -8,9 +9,9 @@ const json = (body, status = 200) =>
 
 async function lastNames(env) {
   const { results } = await env.GUESTBOOK.prepare(
-    'SELECT name FROM names ORDER BY id DESC LIMIT 10'
+    'SELECT name, message FROM names ORDER BY id DESC LIMIT 10'
   ).all();
-  return results.map((r) => r.name);
+  return results.map((r) => ({ name: r.name, message: r.message }));
 }
 
 export default {
@@ -33,7 +34,13 @@ export default {
       if (error) {
         return json({ error }, 400);
       }
-      await env.GUESTBOOK.prepare('INSERT INTO names (name) VALUES (?)').bind(name).run();
+      const { message, error: messageError } = checkMessage(data?.message);
+      if (messageError) {
+        return json({ error: messageError }, 400);
+      }
+      await env.GUESTBOOK.prepare('INSERT INTO names (name, message) VALUES (?, ?)')
+        .bind(name, message)
+        .run();
       return json({ names: await lastNames(env) }, 201);
     }
     return new Response('Method not allowed', { status: 405, headers: { allow: 'GET, POST' } });
