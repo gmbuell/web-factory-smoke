@@ -1,5 +1,6 @@
 const form = document.getElementById('guestbook-form');
 const input = document.getElementById('name');
+const messageInput = document.getElementById('message');
 const list = document.getElementById('names');
 const status = document.getElementById('status');
 
@@ -7,7 +8,12 @@ function show(names) {
   list.replaceChildren(
     ...names.map((n) => {
       const li = document.createElement('li');
-      li.textContent = n;
+      li.textContent = n.name;
+      if (n.message) {
+        const msg = document.createElement('span');
+        msg.textContent = n.message;
+        li.append(': ', msg);
+      }
       return li;
     })
   );
@@ -30,11 +36,12 @@ form.addEventListener('submit', async (e) => {
     const res = await fetch('/api/guestbook', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name: input.value }),
+      body: JSON.stringify({ name: input.value, message: messageInput.value }),
     });
     if (!res.ok) throw new Error();
     show((await res.json()).names);
     input.value = '';
+    messageInput.value = '';
   } catch {
     status.textContent = 'Could not save your name.';
   }
