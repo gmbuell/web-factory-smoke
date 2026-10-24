@@ -8,3 +8,13 @@ export function checkName(value) {
   }
   return { name };
 }
+
+export function checkMessage(value) {
+  if (value === undefined || value === null || value === '') {
+    return { message: null };
+  }
+  if (typeof value !== 'string' || value.length > 140) {
+    return { error: 'Message must be 140 characters or fewer' };
+  }
+  return { message: value.trim() ? value : null };
+}
