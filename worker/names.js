@@ -16,5 +16,8 @@ export function checkMessage(value) {
   if (typeof value !== 'string' || value.length > 140) {
     return { error: 'Message must be 140 characters or fewer' };
   }
-  return { message: value.trim() ? value : null };
+  if (!value.trim()) {
+    return { error: 'Message cannot be only spaces' };
+  }
+  return { message: value };
 }

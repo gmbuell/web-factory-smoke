@@ -48,6 +48,10 @@ describe('guestbook worker', () => {
     expect((await post(fakeEnv(), { name: 'Ann', message: 'a'.repeat(141) })).status).toBe(400);
   });
 
+  it('rejects a message of only whitespace', async () => {
+    expect((await post(fakeEnv(), { name: 'Ann', message: '   ' })).status).toBe(400);
+  });
+
   it('still checks names', async () => {
     expect((await post(fakeEnv(), { name: '123', message: 'hi' })).status).toBe(400);
   });
